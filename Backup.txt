@@ -1,0 +1,56 @@
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
+import random
+import time
+
+app = Flask(__name__, template_folder='C:\\Users\\User\\Desktop\\ProiectSI\\templetates')
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+socketio = SocketIO(app)
+
+# Valoarea inițială
+dynamic_value = 0
+
+@app.route('/')
+def index():
+    return render_template('index.html', dynamic_value=dynamic_value)
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+    emit('update_dynamic_value', {'dynamic_value': dynamic_value})
+
+@socketio.on('request_dynamic_value')
+def handle_request_dynamic_value():
+    new_dynamic_value = random.randint(1, 100)
+    emit('update_dynamic_value', {'dynamic_value': new_dynamic_value}, broadcast=True)
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True, port=5002)
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Real-Time Update</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('update_dynamic_value', function(data) {
+            document.getElementById('dynamicValue').textContent = data.dynamic_value;
+        });
+
+        setInterval(function() {
+            socket.emit('request_dynamic_value');
+        }, 2000);
+    </script>
+</head>
+<body>
+    <h1>Valoare dinamică:</h1>
+    <span id="dynamicValue">{{ dynamic_value }}</span>
+</body>
+</html>
