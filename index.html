@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Real-Time Update</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('update_dynamic_value', function(data) {
+            document.getElementById('dynamicValue').textContent = data.dynamic_value;
+        });
+
+        setInterval(function() {
+            socket.emit('request_dynamic_value');
+        }, 2000);
+
+        function updateEmail() {
+            var email = document.getElementById('emailInput').value;
+            socket.emit('update_email', { 'email': email });
+         }
+
+          function sendCurrentTemperature() {
+            socket.emit('send_current_temperature');
+        }
+    </script>
+</head>
+<body>
+    <h1>Valoare dinamică este:</h1>
+    <span id="dynamicValue">{{ dynamic_value }}</span>
+
+      <form>
+        <label for="emailInput">Introduceți adresa de e-mail:</label>
+        <input type="text" id="emailInput" name="emailInput"><br>
+        <button type="button" onclick="updateEmail()">Setează e-mail</button>
+
+          <button type="button" onclick="sendCurrentTemperature()">Trimite temperatura curentă</button>
+    </form>
+</body>
+</html>
